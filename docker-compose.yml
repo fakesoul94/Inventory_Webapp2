@@ -1,0 +1,109 @@
+# ============================================================================
+# Docker Compose: Inventory Webapp Stack
+# ============================================================================
+# Purpose:
+# - Run the Node.js API/frontend container (`app`) and MariaDB (`db`) together.
+# - Provide an optional one-off backup utility service (`db-backup`).
+#
+# File map:
+# 1) app       -> Node.js server and static client delivery
+# 2) db        -> Persistent MariaDB instance
+# 3) db-backup -> Manual backup runner (profile: tools)
+# 4) volumes   -> Named volume for DB persistence
+# ============================================================================
+
+services:
+  # --------------------------------------------------------------------------
+  # Service: app
+  # --------------------------------------------------------------------------
+  # Builds from the repo root Dockerfile and exposes HTTP on host port 5555.
+  # Connects to `db` over Docker network using internal host name `db`.
+  app:
+    build: .
+    ports:
+      # host:container
+      - "5555:5555"
+    environment:
+      # App listening port inside container.
+      PORT: 5555
+      # Database connection settings for server/dbService.js.
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_USER: ${DB_USER:?DB_USER must be set}
+      DB_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD must be set}
+      DB_NAME: ${DB_NAME:?DB_NAME must be set}
+      APP_SESSION_SECRET: ${APP_SESSION_SECRET:?APP_SESSION_SECRET must be set}
+      DEFAULT_ADMIN_PASSWORD: ${DEFAULT_ADMIN_PASSWORD:?DEFAULT_ADMIN_PASSWORD must be set}
+      DEFAULT_POWERMOON_PASSWORD: ${DEFAULT_POWERMOON_PASSWORD:?DEFAULT_POWERMOON_PASSWORD must be set}
+      COOKIE_SECURE: ${COOKIE_SECURE:-false}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-}
+      LOGIN_RATE_LIMIT_MAX_ATTEMPTS: ${LOGIN_RATE_LIMIT_MAX_ATTEMPTS:-5}
+      LOGIN_RATE_LIMIT_WINDOW_MS: ${LOGIN_RATE_LIMIT_WINDOW_MS:-900000}
+    depends_on:
+      # Wait until DB healthcheck passes before starting app container.
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # --------------------------------------------------------------------------
+  # Service: db
+  # --------------------------------------------------------------------------
+  # Primary MariaDB instance with persistent storage.
+  db:
+    image: mariadb:11.4
+    restart: always
+    environment:
+      # Initial DB/bootstrap credentials and schema.
+      MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:?DB_ROOT_PASSWORD must be set}
+      MARIADB_DATABASE: ${DB_NAME:?DB_NAME must be set}
+      MARIADB_USER: ${DB_USER:?DB_USER must be set}
+      MARIADB_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD must be set}
+    ports:
+      # Exposes DB to host as 3307 to avoid conflicts with local 3306 installs.
+      - "${DB_HOST_PORT:-3307}:3306"
+    volumes:
+      # Named volume preserves data across container recreations.
+      - db_data:/var/lib/mysql
+      # First-boot schema bootstrap for fresh machines/empty volumes.
+      - ./db/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      # Health check used by depends_on condition in dependent services.
+      test: ["CMD-SHELL", "mariadb-admin ping -h 127.0.0.1 -u root -p$$MARIADB_ROOT_PASSWORD"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 20s
+
+  # --------------------------------------------------------------------------
+  # Service: db-backup (optional)
+  # --------------------------------------------------------------------------
+  # One-off utility container for timestamped SQL dumps.
+  # Run with: docker compose --profile tools run --rm db-backup
+  db-backup:
+    image: mariadb:11.4
+    profiles:
+      - tools
+    depends_on:
+      # Ensure backups run only after DB is healthy.
+      db:
+        condition: service_healthy
+    environment:
+      # Password consumed by mariadb tools within the backup container.
+      MYSQL_PWD: ${DB_ROOT_PASSWORD:?DB_ROOT_PASSWORD must be set}
+    command:
+      - /bin/sh
+      - -lc
+      - |
+        # Write a timestamped SQL dump to mounted /backups.
+        mkdir -p /backups
+        timestamp=$$(date +%Y%m%d-%H%M%S)
+        mariadb-dump -h db -uroot ${DB_NAME:?DB_NAME must be set} > /backups/${DB_NAME:?DB_NAME must be set}-$$timestamp.sql
+        echo "Backup written to /backups/${DB_NAME:?DB_NAME must be set}-$$timestamp.sql"
+    volumes:
+      # Store backup files on host for persistence and portability.
+      - ./backups:/backups
+
+# Named volumes managed by Docker.
+volumes:
+  # Persistent MariaDB data directory.
+  db_data:

@@ -1,0 +1,23 @@
+{
+  "name": "server",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "test": "node --test tests/authService.test.js",
+    "test:smoke": "node --test tests/api.smoke.test.js",
+    "test:all": "node --test tests/*.test.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^8.2.0",
+    "express": "^4.22.1",
+    "mysql2": "^3.19.1"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.2"
+  }
+}

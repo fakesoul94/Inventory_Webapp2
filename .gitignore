@@ -1,0 +1,12 @@
+# Dependencies
+node_modules/
+server/node_modules/
+
+# Environment and secrets
+server/.env
+.env
+
+# Local artifacts
+backups/
+.DS_Store
+npm-debug.log*

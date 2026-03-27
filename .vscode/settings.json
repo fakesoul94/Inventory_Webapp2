@@ -1,0 +1,13 @@
+{
+    "chat.tools.terminal.autoApprove": {
+        "/^node -e \"require\\('dotenv'\\)\\.config\\(\\); const mysql=require\\('mysql2'\\); const c=mysql\\.createConnection\\(\\{host:process\\.env\\.HOST,user:'powermoon',password:process\\.env\\.PASSWORD,database:process\\.env\\.DATABASE,port:process\\.env\\.DB_PORT\\}\\); c\\.query\\('SHOW TABLES', \\(e,r\\)=>\\{ if\\(e\\)\\{ console\\.error\\(e\\.message\\); process\\.exit\\(1\\);\\} console\\.log\\(JSON\\.stringify\\(r,null,2\\)\\); c\\.end\\(\\); \\}\\);\"$/": {
+            "approve": true,
+            "matchCommandLine": true
+        }
+    },
+    "cSpell.words": [
+        "Buildability",
+        "stockmovement",
+        "Tricoma"
+    ]
+}

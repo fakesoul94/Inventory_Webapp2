@@ -1,0 +1,895 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="stylesheet.css">
+    <title>Inventory Dashboard</title>
+</head>
+<body>
+    <div class="auth-overlay" id="auth-overlay">
+        <form class="auth-card" id="login-form">
+            <h1>Inventory Dashboard</h1>
+            <p class="auth-subtitle">Sign in to continue.</p>
+            <input id="login-username-input" placeholder="Username" maxlength="40" autocomplete="username">
+            <input id="login-password-input" placeholder="Password" type="password" maxlength="200" autocomplete="current-password">
+            <button id="login-btn" type="submit">Sign In</button>
+            <p class="auth-message" id="login-message"></p>
+        </form>
+    </div>
+
+    <main class="app" id="app-shell" hidden>
+        <!-- Section 01: App shell title. -->
+        <h1 class="title">Inventory Dashboard</h1>
+
+        <div class="dashboard-shell">
+        <aside class="sidebar">
+        <div class="sidebar-panel">
+        <div class="session-bar">
+            <div class="session-user">
+                <span class="session-avatar" aria-hidden="true">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z"></path>
+                        <path d="M5 20a7 7 0 0 1 14 0"></path>
+                    </svg>
+                </span>
+                <div class="session-details">
+                    <span class="session-caption">Signed in as</span>
+                    <strong id="session-display-name">-</strong>
+                    <span class="role-chip" id="session-role-label">-</span>
+                </div>
+            </div>
+            <div class="session-actions">
+                <button id="toggle-change-password-btn" type="button" class="secondary-button">Change Password</button>
+                <button id="logout-btn" type="button" class="secondary-button">Logout</button>
+            </div>
+        </div>
+        <!-- Section 02: Sidebar tab navigation. -->
+        <nav class="tabs" role="tablist" aria-label="Inventory Sections">
+            <button class="tab-button active" role="tab" aria-selected="true" aria-controls="dashboard-panel" data-panel-target="dashboard" id="tab-dashboard">
+                <span class="tab-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M4 12 12 5l8 7"></path>
+                        <path d="M6 10v9h12v-9"></path>
+                        <path d="M10 19v-5h4v5"></path>
+                    </svg>
+                </span>
+                <span class="tab-label">Dashboard</span>
+            </button>
+            <button class="tab-button" role="tab" aria-selected="false" aria-controls="current-stock-add-remove" data-panel-target="current-stock" id="tab-current-stock">
+                <span class="tab-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M4 7h16v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7Z"></path>
+                        <path d="M5 4h14a1 1 0 0 1 1 1v2H4V5a1 1 0 0 1 1-1Z"></path>
+                        <path d="M9 11h6"></path>
+                    </svg>
+                </span>
+                <span class="tab-label">Current Stock</span>
+            </button>
+            <button class="tab-button" role="tab" aria-selected="false" aria-controls="finished-products-table-panel" data-panel-target="finished-products" id="tab-finished-products">
+                <span class="tab-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M4 9.5 12 5l8 4.5v8L12 22l-8-4.5v-8Z"></path>
+                        <path d="m9.5 12 1.8 1.8L15 10.2"></path>
+                    </svg>
+                </span>
+                <span class="tab-label">Finished Products</span>
+            </button>
+            <button class="tab-button" role="tab" aria-selected="false" aria-controls="production-planner-panel" data-panel-target="production-planner" id="tab-production-planner">
+                <span class="tab-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M6 3h12a2 2 0 0 1 2 2v14l-4-2-4 2-4-2-4 2V5a2 2 0 0 1 2-2Z"></path>
+                        <path d="M8 8h8"></path>
+                        <path d="M8 12h5"></path>
+                    </svg>
+                </span>
+                <span class="tab-label">Production Planner</span>
+            </button>
+            <button class="tab-button" role="tab" aria-selected="false" aria-controls="production-schedule-panel" data-panel-target="production-schedule" id="tab-production-schedule">
+                <span class="tab-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M8 3h8"></path>
+                        <path d="M7 5h10a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Z"></path>
+                        <path d="M8 10h8"></path>
+                        <path d="M8 14h5"></path>
+                    </svg>
+                </span>
+                <span class="tab-label">Production Schedule</span>
+            </button>
+            <button class="tab-button" role="tab" aria-selected="false" aria-controls="transactions-panel" data-panel-target="transactions" id="tab-transactions">
+                <span class="tab-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M7 7h11"></path>
+                        <path d="m14 4 4 3-4 3"></path>
+                        <path d="M17 17H6"></path>
+                        <path d="m10 14-4 3 4 3"></path>
+                    </svg>
+                </span>
+                <span class="tab-label">Transactions</span>
+            </button>
+            <button class="tab-button" role="tab" aria-selected="false" aria-controls="most-used-parts-panel" data-panel-target="most-used-parts" id="tab-most-used-parts">
+                <span class="tab-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M5 19V9"></path>
+                        <path d="M12 19V5"></path>
+                        <path d="M19 19v-7"></path>
+                        <path d="M3 19h18"></path>
+                    </svg>
+                </span>
+                <span class="tab-label">Most Used Parts</span>
+            </button>
+            <button class="tab-button" role="tab" aria-selected="false" aria-controls="most-produced-products-panel" data-panel-target="most-produced-products" id="tab-most-produced-products">
+                <span class="tab-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M4 8.5 12 4l8 4.5v7L12 20l-8-4.5v-7Z"></path>
+                        <path d="M12 4v16"></path>
+                        <path d="M4 8.5 12 13l8-4.5"></path>
+                    </svg>
+                </span>
+                <span class="tab-label">Most Produced Products</span>
+            </button>
+            <button class="tab-button" role="tab" aria-selected="false" aria-controls="admin-add-products" data-panel-target="inventory-setup" id="tab-inventory-setup">
+                <span class="tab-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M4 7h7v5H4z"></path>
+                        <path d="M13 7h7"></path>
+                        <path d="M13 12h7"></path>
+                        <path d="M4 16h7v4H4z"></path>
+                        <path d="M16.5 16v4"></path>
+                        <path d="M13 18h7"></path>
+                    </svg>
+                </span>
+                <span class="tab-label">Inventory Setup</span>
+            </button>
+            <button class="tab-button" role="tab" aria-selected="false" aria-controls="log-book-panel" data-panel-target="log-book" id="tab-log-book">
+                <span class="tab-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M6 4h9l3 3v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z"></path>
+                        <path d="M15 4v4h4"></path>
+                        <path d="M8 11h8"></path>
+                        <path d="M8 15h8"></path>
+                    </svg>
+                </span>
+                <span class="tab-label">Log Book</span>
+            </button>
+            <button class="tab-button" role="tab" aria-selected="false" aria-controls="admin-users-panel" data-panel-target="admin" id="tab-admin">
+                <span class="tab-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M12 3 5 6v6c0 4.4 2.9 7.9 7 9 4.1-1.1 7-4.6 7-9V6l-7-3Z"></path>
+                        <path d="M12 10a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z"></path>
+                        <path d="M8.5 17a3.5 3.5 0 0 1 7 0"></path>
+                    </svg>
+                </span>
+                <span class="tab-label">Admin</span>
+            </button>
+        </nav>
+        </div>
+        </aside>
+
+        <div class="dashboard-content">
+        <div class="account-card" id="change-password-panel" hidden>
+            <h2>Change Password</h2>
+            <p id="change-password-status" hidden></p>
+            <input id="current-password-input" placeholder="Current password" type="password" maxlength="200" autocomplete="current-password">
+            <input id="new-password-input" placeholder="New password" type="password" maxlength="200" autocomplete="new-password">
+            <input id="confirm-password-input" placeholder="Confirm new password" type="password" maxlength="200" autocomplete="new-password">
+            <button id="save-password-btn" type="button">Save Password</button>
+            <button id="cancel-password-btn" type="button" class="secondary-button">Cancel</button>
+        </div>
+        <div class="tab-panel active" id="dashboard-panel" data-panel="dashboard" role="tabpanel" aria-labelledby="tab-dashboard">
+            <h2>Dashboard KPI</h2>
+            <p class="dashboard-panel-subtitle" id="dashboard-period-caption">Live overview of inventory risk and production activity.</p>
+
+            <div class="dashboard-kpi-summary-grid">
+                <section class="buildable-stat-card dashboard-kpi-card dashboard-kpi-card-summary">
+                    <span class="buildable-stat-label">Production This Month</span>
+                    <strong class="buildable-stat-value" id="dashboard-production-this-month">0</strong>
+                    <span class="buildable-stat-caption" id="dashboard-production-month-caption">Total finished-product units produced this month.</span>
+                </section>
+
+                <section class="buildable-stat-card dashboard-kpi-card dashboard-kpi-card-summary">
+                    <span class="buildable-stat-label">Top Used Part This Year</span>
+                    <strong class="dashboard-kpi-name" id="dashboard-top-used-part-name">No production yet</strong>
+                    <span class="dashboard-kpi-meta" id="dashboard-top-used-part-qty">0</span>
+                    <span class="buildable-stat-caption" id="dashboard-top-used-part-caption">Highest-consumption part in the current year.</span>
+                </section>
+
+                <section class="buildable-stat-card dashboard-kpi-card dashboard-kpi-card-summary">
+                    <span class="buildable-stat-label">Top Produced Product This Year</span>
+                    <strong class="dashboard-kpi-name" id="dashboard-top-produced-product-name">No production yet</strong>
+                    <span class="dashboard-kpi-meta" id="dashboard-top-produced-product-qty">0</span>
+                    <span class="buildable-stat-caption" id="dashboard-top-produced-product-caption">Highest-output finished product in the current year.</span>
+                </section>
+            </div>
+
+            <div class="dashboard-kpi-detail-grid">
+                <section class="buildable-stat-card dashboard-kpi-card dashboard-kpi-card-detail">
+                    <span class="buildable-stat-label">Pending Productions Due Soon</span>
+                    <div class="dashboard-kpi-list" id="dashboard-pending-productions-list"></div>
+                    <span class="buildable-stat-caption" id="dashboard-pending-productions-caption">Nearest pending productions ordered by due date.</span>
+                </section>
+
+                <section class="buildable-stat-card dashboard-kpi-card dashboard-kpi-card-detail">
+                    <span class="buildable-stat-label">Top 10 Missing Parts</span>
+                    <div class="dashboard-kpi-list" id="dashboard-shortage-list"></div>
+                    <span class="buildable-stat-caption" id="dashboard-shortage-caption">Current parts with the highest gap to reorder level.</span>
+                </section>
+            </div>
+        </div>
+        <!-- Section 03: Current Stock panels (default visible group). -->
+        <div class="tab-panel" id="current-stock-add-remove" data-panel="current-stock" role="tabpanel" aria-labelledby="tab-current-stock" hidden>
+            <h2>Add/Remove Stock Parts</h2>
+            <br>
+            <select id="movement-part-select">
+                <option value="">Loading...</option>
+            </select>
+
+            <input placeholder="QTY" id="movement-qty-input" type="number" step="1">
+            <button id="add-movement-btn">Add</button>
+        </div>
+
+        <div class="tab-panel" id="current-stock-buildable" data-panel="current-stock" role="tabpanel" aria-labelledby="tab-current-stock" hidden>
+            <h2>Buildable Product View</h2>
+            <div class="buildable-toolbar">
+                <select id="current-stock-product-filter-select">
+                    <option value="">Loading products...</option>
+                </select>
+                <button id="current-stock-reset-filter-btn" type="button">Reset Filter</button>
+            </div>
+
+            <section class="buildable-limiting-panel">
+                <div class="buildable-limiting-header">
+                    <div>
+                        <h3 class="buildable-limiting-title">Materials Used</h3>
+                        <span class="buildable-limiting-subtitle" id="current-stock-materials-caption">Select a product to see the parts required for assembly.</span>
+                    </div>
+                    <span class="buildable-header-count" id="current-stock-materials-count">-</span>
+                </div>
+                <div class="buildable-limiting-list" id="current-stock-materials-list"></div>
+            </section>
+        </div>
+
+        <div class="tab-panel" id="current-stock-table" data-panel="current-stock" role="tabpanel" aria-labelledby="tab-current-stock" hidden>
+            <h2>Current Stock</h2>
+            <!-- Search, low-stock toggle, and reorder export all operate on the same stock dataset. -->
+            <div class="part-stock-controls">
+                <input placeholder="Search current stock" id="part-stock-search-input" maxlength="120">
+                <button id="part-stock-filter-btn">Show low stock</button>
+                <button id="part-stock-export-pdf-btn" type="button" disabled>Generate Reorder PDF</button>
+            </div>
+            <div class="table-wrap">
+                <table id="part-stock-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Part Name</th>
+                            <th>Qty</th>
+                            <th>Reorder Level</th>
+                            <th>Reorder Quantity</th>
+                            <th>Tricoma Nr.</th>
+                            <th>Total Movement</th>
+                            <th>Total Used</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+            <div class="part-stock-pagination" aria-live="polite">
+                <span class="part-stock-pagination-summary" id="part-stock-page-summary">Showing 0 results</span>
+                <div class="part-stock-pagination-controls" id="part-stock-pagination-controls"></div>
+            </div>
+        </div>
+
+        <!-- Section 04: Finished Products panels. -->
+        <div class="tab-panel" id="finished-products-table-panel" data-panel="finished-products" role="tabpanel" aria-labelledby="tab-finished-products" hidden>
+            <h2>Finished Products</h2>
+            <br>
+            <div class="production-schedule-entry-panel finished-products-note-panel">
+                <div class="production-schedule-header">
+                    <div>
+                        <h3>Completed from Production Schedule</h3>
+                        <p class="production-schedule-caption">Finished products are created automatically when a production is completed in the schedule. Manual add is no longer used.</p>
+                    </div>
+                </div>
+            </div>
+            <input placeholder="Search finished products" id="finished-product-search-input" maxlength="120">
+            <div class="table-wrap">
+                <table id="finished-products-table">
+                    <thead>
+                        <tr>
+                            <th>No.</th>
+                            <th>Product</th>
+                            <th>Qty</th>
+                            <th>Produced</th>
+                            <th>Schedule</th>
+                            <th>Due Date</th>
+                            <th>Comments</th>
+                            <th>Created By</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Section 05: Production Planner panel. -->
+        <div class="tab-panel" id="production-planner-panel" data-panel="production-planner" role="tabpanel" aria-labelledby="tab-production-planner" hidden>
+            <h2>Production Planner</h2>
+            <br>
+            <!-- Planner inputs feed the backend calculation and optional PDF export. -->
+            <div class="production-planner-toolbar">
+                <select id="production-planner-product-select">
+                    <option value="">Loading products...</option>
+                </select>
+                <input placeholder="QTY" id="production-planner-qty-input" type="number" min="1" step="1">
+                <button id="production-planner-calculate-btn" type="button">Calculate Material</button>
+                <button id="production-planner-export-pdf-btn" type="button" disabled>Export PDF</button>
+            </div>
+
+            <div id="production-planner-buildability-summary" hidden>
+                <div class="buildable-summary-grid">
+                    <section class="buildable-stat-card">
+                        <span class="buildable-stat-label">Maximum Buildable</span>
+                        <strong class="buildable-stat-value" id="production-planner-max-buildable">-</strong>
+                        <span class="buildable-stat-caption">Units possible from current part stock before the requested production run.</span>
+                    </section>
+
+                    <section class="buildable-stat-card">
+                        <span class="buildable-stat-label">Limiting Parts</span>
+                        <strong class="buildable-stat-value" id="production-planner-limiting-parts-count">-</strong>
+                        <span class="buildable-stat-caption" id="production-planner-limiting-caption">Run a calculation to inspect the current bottlenecks.</span>
+                    </section>
+                </div>
+            </div>
+
+            <div class="table-wrap">
+                <table id="production-planner-table">
+                    <thead>
+                        <tr>
+                            <th>Part</th>
+                            <th>Qty per Product</th>
+                            <th>Required Qty</th>
+                            <th>Current Stock</th>
+                            <th>Remaining After Plan</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td class="no-data" colspan="6">Select a product and quantity to calculate material</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="part-stock-pagination" aria-live="polite">
+                <span class="part-stock-pagination-summary" id="production-planner-page-summary">Showing 0 materials</span>
+                <div class="part-stock-pagination-controls" id="production-planner-pagination-controls"></div>
+            </div>
+        </div>
+
+        <div class="tab-panel" id="production-schedule-panel" data-panel="production-schedule" role="tabpanel" aria-labelledby="tab-production-schedule" hidden>
+            <h2>Production Schedule</h2>
+            <br>
+
+            <section class="production-schedule-section">
+                <div class="production-schedule-entry-panel">
+                    <div class="production-schedule-header">
+                        <div>
+                            <h3>Schedule Production</h3>
+                            <p class="production-schedule-caption">Queue productions with due dates and optional notes. Pending orders reserve materials automatically by due date.</p>
+                        </div>
+                    </div>
+
+                    <div class="production-schedule-entry-grid">
+                        <select id="production-schedule-product-select">
+                            <option value="">Loading products...</option>
+                        </select>
+                        <input placeholder="QTY" id="production-schedule-qty-input" type="number" min="1" step="1">
+                        <input id="production-schedule-due-date-input" type="date" aria-label="Production due date">
+                        <button id="production-schedule-add-btn" type="button">Add to Schedule</button>
+                        <textarea id="production-schedule-comments-input" placeholder="Comments (optional)" rows="3" maxlength="500"></textarea>
+                    </div>
+                </div>
+
+                <div class="production-schedule-header">
+                    <div>
+                        <h3>Schedule Overview</h3>
+                        <p class="production-schedule-caption">Pending productions are allocated automatically by due date and move to Finished Products once completed.</p>
+                    </div>
+                </div>
+
+                <div class="buildable-summary-grid production-schedule-summary-grid">
+                    <section class="buildable-stat-card">
+                        <span class="buildable-stat-label">Pending Orders</span>
+                        <strong class="buildable-stat-value" id="production-schedule-pending-count">0</strong>
+                        <span class="buildable-stat-caption" id="production-schedule-next-due-caption">No pending productions scheduled.</span>
+                    </section>
+
+                    <section class="buildable-stat-card">
+                        <span class="buildable-stat-label">Scheduled Units</span>
+                        <strong class="buildable-stat-value" id="production-schedule-units-count">0</strong>
+                        <span class="buildable-stat-caption">Total units queued across all pending productions.</span>
+                    </section>
+
+                    <section class="buildable-stat-card">
+                        <span class="buildable-stat-label">Fully Allocated</span>
+                        <strong class="buildable-stat-value" id="production-schedule-ready-count">0</strong>
+                        <span class="buildable-stat-caption">Pending productions currently covered by available material.</span>
+                    </section>
+
+                    <section class="buildable-stat-card">
+                        <span class="buildable-stat-label">With Shortages</span>
+                        <strong class="buildable-stat-value" id="production-schedule-shortage-count">0</strong>
+                        <span class="buildable-stat-caption">Productions that are missing one or more parts.</span>
+                    </section>
+                </div>
+
+                <div class="production-schedule-list-panel">
+                    <div class="production-schedule-header">
+                        <div>
+                            <h3>Pending Production Queue</h3>
+                            <p class="production-schedule-caption">Planner-style queue for pending jobs only. Completed jobs move directly into Finished Products.</p>
+                        </div>
+                    </div>
+
+                    <div class="table-wrap">
+                        <table id="production-schedule-table">
+                            <thead>
+                                <tr>
+                                    <th class="production-schedule-marker-col"></th>
+                                    <th>Job</th>
+                                    <th>ID</th>
+                                    <th>Ready</th>
+                                    <th>Qty</th>
+                                    <th>Created</th>
+                                    <th>Due Date</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td class="no-data" colspan="9">No pending productions scheduled.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="part-stock-pagination" aria-live="polite">
+                        <span class="part-stock-pagination-summary" id="production-schedule-page-summary">Showing 0 pending productions</span>
+                        <div class="part-stock-pagination-controls" id="production-schedule-pagination-controls"></div>
+                    </div>
+                </div>
+
+                <div class="production-schedule-inspector production-schedule-inspector-below">
+                    <div class="production-schedule-header">
+                        <div>
+                            <h3>Selected Production</h3>
+                            <p class="production-schedule-caption" id="production-schedule-inspector-caption">Select a production to inspect notes, dates, and execution context.</p>
+                        </div>
+                    </div>
+
+                    <div class="production-schedule-inspector-empty" id="production-schedule-inspector-empty">
+                        Select a pending production from the queue to inspect its details.
+                    </div>
+
+                    <div class="production-schedule-inspector-content" id="production-schedule-inspector-content" hidden>
+                        <div class="production-schedule-inspector-top">
+                            <div class="production-schedule-inspector-heading">
+                                <h4 id="production-schedule-inspector-product">-</h4>
+                                <p class="production-schedule-caption" id="production-schedule-inspector-subtitle">-</p>
+                            </div>
+                            <span class="production-schedule-status-chip" id="production-schedule-inspector-status">Pending</span>
+                        </div>
+
+                        <div class="production-schedule-inspector-comments-panel">
+                            <span class="buildable-stat-label">Comments</span>
+                            <div class="production-schedule-inspector-comments-box" id="production-schedule-inspector-comments">No comments recorded.</div>
+                        </div>
+
+                        <div class="production-schedule-inspector-properties">
+                            <div class="production-schedule-property-row">
+                                <span>Schedule ID</span>
+                                <strong id="production-schedule-inspector-id">-</strong>
+                            </div>
+                            <div class="production-schedule-property-row">
+                                <span>Readiness</span>
+                                <strong id="production-schedule-inspector-ready">-</strong>
+                            </div>
+                            <div class="production-schedule-property-row">
+                                <span>Qty</span>
+                                <strong id="production-schedule-inspector-qty">-</strong>
+                            </div>
+                            <div class="production-schedule-property-row">
+                                <span>Due</span>
+                                <strong id="production-schedule-inspector-due">-</strong>
+                            </div>
+                            <div class="production-schedule-property-row">
+                                <span>Missing Parts</span>
+                                <strong id="production-schedule-inspector-missing">-</strong>
+                            </div>
+                            <div class="production-schedule-property-row">
+                                <span>Created By</span>
+                                <strong id="production-schedule-inspector-created-by">-</strong>
+                            </div>
+                            <div class="production-schedule-property-row">
+                                <span>Created</span>
+                                <strong id="production-schedule-inspector-created-at">-</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="production-schedule-allocation-panel">
+                    <div class="production-schedule-header">
+                        <div>
+                            <h3>Production Details</h3>
+                            <p class="production-schedule-caption" id="production-schedule-allocation-caption">Select a pending production to inspect its reserved materials.</p>
+                        </div>
+                    </div>
+
+                    <div class="table-wrap">
+                        <table id="production-schedule-allocation-table">
+                            <thead>
+                                <tr>
+                                    <th>Part</th>
+                                    <th>Qty per Product</th>
+                                    <th>Required Qty</th>
+                                    <th>Available Before</th>
+                                    <th>Reserved</th>
+                                    <th>Shortage</th>
+                                    <th>Remaining After</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td class="no-data" colspan="8">Select a production to inspect its material breakdown.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="part-stock-pagination" aria-live="polite">
+                        <span class="part-stock-pagination-summary" id="production-schedule-allocation-page-summary">Showing 0 materials</span>
+                        <div class="part-stock-pagination-controls" id="production-schedule-allocation-pagination-controls"></div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Section 06: Transactions panel. -->
+        <div class="tab-panel" id="transactions-panel" data-panel="transactions" role="tabpanel" aria-labelledby="tab-transactions" hidden>
+            <h2>Transactions</h2>
+            <div class="transactions-controls">
+                <input placeholder="Search transactions" id="stock-movement-search-input" maxlength="120">
+                <select id="stock-movement-type-filter-select">
+                    <option value="">All types</option>
+                    <option value="IN">IN</option>
+                    <option value="OUT">OUT</option>
+                    <option value="OUT - Production">OUT - Production</option>
+                </select>
+                <select id="stock-movement-user-filter-select">
+                    <option value="">All users</option>
+                </select>
+                <select id="stock-movement-product-filter-select">
+                    <option value="">All produced products</option>
+                </select>
+                <input id="stock-movement-date-from-input" type="date" aria-label="Transactions date from">
+                <input id="stock-movement-date-to-input" type="date" aria-label="Transactions date to">
+                <button id="stock-movement-reset-filters-btn" type="button" class="secondary-button">Reset Filters</button>
+                <button id="stock-movement-export-csv-btn" type="button" class="secondary-button" disabled>Export CSV</button>
+                <button id="stock-movement-export-pdf-btn" type="button" disabled>Export PDF</button>
+            </div>
+
+            <div class="table-wrap">
+                <table id="stock-movement-table">
+                    <thead>
+                        <tr>
+                            <th>No.</th>
+                            <th>Part name</th>
+                            <th>Qty</th>
+                            <th>Type</th>
+                            <th>User</th>
+                            <th>Produced Product</th>
+                            <th>Date</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+            <div class="part-stock-pagination" aria-live="polite">
+                <span class="part-stock-pagination-summary" id="stock-movement-page-summary">Showing 0 transactions</span>
+                <div class="part-stock-pagination-controls" id="stock-movement-pagination-controls"></div>
+            </div>
+        </div>
+
+        <div class="tab-panel" id="log-book-panel" data-panel="log-book" role="tabpanel" aria-labelledby="tab-log-book" hidden>
+            <h2>Log Book</h2>
+            <div class="transactions-controls log-book-controls">
+                <input placeholder="Search log book" id="app-log-search-input" maxlength="120">
+                <select id="app-log-level-filter-select">
+                    <option value="">All levels</option>
+                </select>
+                <input id="app-log-date-from-input" type="date" aria-label="Log book date from">
+                <input id="app-log-date-to-input" type="date" aria-label="Log book date to">
+                <button id="app-log-reset-filters-btn" type="button" class="secondary-button">Reset Filters</button>
+                <button id="app-log-refresh-btn" type="button">Refresh</button>
+            </div>
+
+            <div class="table-wrap">
+                <table id="app-log-table">
+                    <thead>
+                        <tr>
+                            <th>No.</th>
+                            <th>Date</th>
+                            <th>Level</th>
+                            <th>Category</th>
+                            <th>User</th>
+                            <th>Message</th>
+                            <th>Request</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+            <div class="part-stock-pagination" aria-live="polite">
+                <span class="part-stock-pagination-summary" id="app-log-page-summary">Showing 0 log entries</span>
+                <div class="part-stock-pagination-controls" id="app-log-pagination-controls"></div>
+            </div>
+        </div>
+
+        <div class="tab-panel" id="most-used-parts-panel" data-panel="most-used-parts" role="tabpanel" aria-labelledby="tab-most-used-parts" hidden>
+            <div class="analytics-toolbar">
+                <h2>Most Used Parts</h2>
+                <div class="analytics-toolbar-controls">
+                    <input id="most-used-parts-year-input" type="number" min="2000" max="2100" step="1" placeholder="Year" inputmode="numeric">
+                    <button id="most-used-parts-apply-btn" type="button" class="secondary-button">Load Year</button>
+                </div>
+            </div>
+            <div class="buildable-limiting-panel">
+                <div class="buildable-limiting-header">
+                    <div>
+                        <h3 class="buildable-limiting-title">Top 10 Individual Parts Used</h3>
+                        <span class="buildable-limiting-subtitle" id="most-used-parts-top-caption">Highest-consumption parts in the selected year.</span>
+                    </div>
+                    <span class="buildable-header-count" id="most-used-parts-top-count">0</span>
+                </div>
+                <div class="buildable-limiting-list" id="most-used-parts-top-list"></div>
+            </div>
+            <div class="buildable-summary-grid">
+                <div class="buildable-stat-card">
+                    <span class="buildable-stat-label">Distinct Parts Used</span>
+                    <strong class="buildable-stat-value" id="most-used-parts-total-types">0</strong>
+                    <span class="buildable-stat-caption">Number of unique parts consumed across production runs.</span>
+                </div>
+            </div>
+            <div class="table-wrap">
+                <table id="most-used-parts-table">
+                    <thead>
+                        <tr>
+                            <th>No.</th>
+                            <th>Part</th>
+                            <th>Tricoma Nr.</th>
+                            <th>Total Used</th>
+                            <th>Production Runs</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+            <div class="part-stock-pagination" aria-live="polite">
+                <span class="part-stock-pagination-summary" id="most-used-parts-page-summary">Showing 0 parts</span>
+                <div class="part-stock-pagination-controls" id="most-used-parts-pagination-controls"></div>
+            </div>
+        </div>
+
+        <div class="tab-panel" id="most-produced-products-panel" data-panel="most-produced-products" role="tabpanel" aria-labelledby="tab-most-produced-products" hidden>
+            <div class="analytics-toolbar">
+                <h2>Most Produced Products</h2>
+                <div class="analytics-toolbar-controls">
+                    <input id="most-produced-products-year-input" type="number" min="2000" max="2100" step="1" placeholder="Year" inputmode="numeric">
+                    <button id="most-produced-products-apply-btn" type="button" class="secondary-button">Load Year</button>
+                </div>
+            </div>
+            <div class="buildable-summary-grid">
+                <div class="buildable-stat-card">
+                    <span class="buildable-stat-label">Total Products Produced</span>
+                    <strong class="buildable-stat-value" id="most-produced-products-total-produced">0</strong>
+                    <span class="buildable-stat-caption" id="most-produced-products-total-caption">Total finished-product units produced in the selected year.</span>
+                </div>
+                <div class="buildable-stat-card">
+                    <span class="buildable-stat-label">Distinct Products Produced</span>
+                    <strong class="buildable-stat-value" id="most-produced-products-total-types">0</strong>
+                    <span class="buildable-stat-caption">Number of unique products produced across production runs.</span>
+                </div>
+            </div>
+            <div class="table-wrap">
+                <table id="most-produced-products-table">
+                    <thead>
+                        <tr>
+                            <th>No.</th>
+                            <th>Product</th>
+                            <th>Total Produced</th>
+                            <th>Production Runs</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+            <div class="part-stock-pagination" aria-live="polite">
+                <span class="part-stock-pagination-summary" id="most-produced-products-page-summary">Showing 0 products</span>
+                <div class="part-stock-pagination-controls" id="most-produced-products-pagination-controls"></div>
+            </div>
+        </div>
+
+        <!-- Section 07: Inventory setup panels. -->
+        <div class="tab-panel" id="admin-csv-tools" data-panel="inventory-setup" role="tabpanel" aria-labelledby="tab-inventory-setup" hidden>
+            <h2>CSV Import / Export</h2>
+            <p id="admin-csv-tools-status">Export the current catalog to CSV, edit it in bulk, then import it back. BOM CSV rows can create or update product-part relations directly.</p>
+
+            <div class="inventory-csv-grid">
+                <section class="inventory-csv-card">
+                    <h3>Products CSV</h3>
+                    <p>Create new products or rename existing products in bulk.</p>
+                    <input id="admin-products-csv-input" type="file" accept=".csv,text/csv">
+                    <div class="inventory-csv-card-actions">
+                        <button id="admin-export-products-csv-btn" type="button" class="secondary-button">Export Products CSV</button>
+                        <button id="admin-import-products-csv-btn" type="button">Import Products CSV</button>
+                    </div>
+                </section>
+
+                <section class="inventory-csv-card">
+                    <h3>Parts CSV</h3>
+                    <p>Update part names, Tricoma numbers, and reorder settings in one file.</p>
+                    <input id="admin-parts-csv-input" type="file" accept=".csv,text/csv">
+                    <div class="inventory-csv-card-actions">
+                        <button id="admin-export-parts-csv-btn" type="button" class="secondary-button">Export Parts CSV</button>
+                        <button id="admin-import-parts-csv-btn" type="button">Import Parts CSV</button>
+                    </div>
+                </section>
+
+                <section class="inventory-csv-card">
+                    <h3>BOM CSV</h3>
+                    <p>Each row links one product to one part, so importing the file creates or updates BOM relations automatically.</p>
+                    <input id="admin-bom-csv-input" type="file" accept=".csv,text/csv">
+                    <div class="inventory-csv-card-actions">
+                        <button id="admin-export-bom-csv-btn" type="button" class="secondary-button">Export BOM CSV</button>
+                        <button id="admin-import-bom-csv-btn" type="button">Import BOM CSV</button>
+                    </div>
+                </section>
+            </div>
+        </div>
+
+        <div class="tab-panel" id="admin-add-products" data-panel="inventory-setup" role="tabpanel" aria-labelledby="tab-inventory-setup" hidden>
+            <h2>Add Products</h2>
+            <br>
+            <input id="admin-product-name-input" placeholder="New product name" maxlength="120">
+            <button id="admin-add-product-btn">Add Product</button>
+
+        </div>
+        <div class="tab-panel" id="admin-add-parts" data-panel="inventory-setup" role="tabpanel" aria-labelledby="tab-inventory-setup" hidden>
+
+            <h2>Add Parts & BOM</h2>
+            <br>
+            <input id="admin-part-name-input" placeholder="Part name" maxlength="120">
+            <input id="admin-part-tricoma-input" placeholder="Tricoma Nr." maxlength="80">
+            
+            <input id="admin-part-reorder-level-input" placeholder="Reorder level" type="number" min="0" step="1">
+            <input id="admin-part-reorder-qty-input" placeholder="Reorder quantity" type="number" min="1" step="1">
+            <select id="admin-usage-product-select">
+                <option value="">Loading products...</option>
+            </select>
+            <input id="admin-usage-qty-input" placeholder="Qty per product" type="number" min="1" step="1">
+            <br>
+            <button id="admin-add-usage-btn" type="button">Add BOM Relation</button>
+
+            <div class="table-wrap">
+                <table id="admin-part-usage-table">
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th>Qty per Product</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+            <br>
+            <button id="admin-add-part-btn" type="button">Add Part</button>
+        </div>
+
+        <div class="tab-panel" id="admin-edit-bom" data-panel="inventory-setup" role="tabpanel" aria-labelledby="tab-inventory-setup" hidden>
+            <h2>Edit Part BOM Relations</h2>
+            <br>
+            <select id="admin-edit-part-select">
+                <option value="">Loading parts...</option>
+            </select>
+
+            <select id="admin-edit-usage-product-select">
+                <option value="">Loading products...</option>
+            </select>
+            <input id="admin-edit-usage-qty-input" placeholder="Qty per product" type="number" min="1" step="1">
+            <button id="admin-edit-add-usage-btn" type="button">Add / Update Relation</button>
+
+            <div class="table-wrap">
+                <table id="admin-edit-part-usage-table">
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th>Qty per Product</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+
+            <br>
+            <button id="admin-save-part-bom-btn" type="button">Save BOM Changes</button>
+        </div>
+
+        <div class="tab-panel" id="admin-edit-part-details" data-panel="inventory-setup" role="tabpanel" aria-labelledby="tab-inventory-setup" hidden>
+            <h2>Edit Part Details</h2>
+            <br>
+            <select id="admin-edit-part-details-select">
+                <option value="">Loading parts...</option>
+            </select>
+
+            <input id="admin-edit-part-name-input" placeholder="Part name" maxlength="120">
+            <input id="admin-edit-part-tricoma-input" placeholder="Tricoma Nr." maxlength="80">
+            <input id="admin-edit-part-reorder-level-input" placeholder="Reorder level" type="number" min="0" step="1">
+            <input id="admin-edit-part-reorder-qty-input" placeholder="Reorder quantity" type="number" min="1" step="1">
+            <button id="admin-save-part-details-btn" type="button">Save Part Details</button>
+        </div>
+
+        <div class="tab-panel" id="admin-delete-records" data-panel="inventory-setup" role="tabpanel" aria-labelledby="tab-inventory-setup" hidden>
+
+            <h2>Delete Parts & Products</h2>
+            <br>
+            <p>Delete existing parts (also removes BOM relations).</p>
+            <br>
+            <select id="admin-delete-part-select">
+                <option value="">Loading parts...</option>
+            </select>
+            <button id="admin-delete-part-btn" type="button">Delete Part</button>
+
+            <p>Delete existing products (also removes BOM and finished product relations).</p>
+            <br>
+            <select id="admin-delete-product-select">
+                <option value="">Loading products...</option>
+            </select>
+            <button id="admin-delete-product-btn" type="button">Delete Product</button>
+        </div>
+
+        <!-- Section 08: Admin panels. -->
+        <div class="tab-panel" id="admin-users-panel" data-panel="admin" role="tabpanel" aria-labelledby="tab-admin" hidden>
+            <h2>User Management</h2>
+            <br>
+            <input id="admin-user-username-input" placeholder="Username" maxlength="40" autocomplete="off">
+            <input id="admin-user-display-name-input" placeholder="Display name" maxlength="120">
+            <select id="admin-user-role-select">
+                <option value="powermoon" selected>Standard User</option>
+                <option value="admin">Administrator</option>
+            </select>
+            <input id="admin-user-password-input" placeholder="Password" type="password" maxlength="200" autocomplete="new-password">
+            <button id="admin-save-user-btn" type="button">Create User</button>
+            <button id="admin-cancel-user-edit-btn" type="button" class="secondary-button" hidden>Cancel Edit</button>
+            <p id="admin-user-form-status">Leaving password blank while editing keeps the current password.</p>
+
+            <div class="table-wrap">
+                <table id="admin-users-table">
+                    <thead>
+                        <tr>
+                            <th>Username</th>
+                            <th>Display Name</th>
+                            <th>Role</th>
+                            <th>Updated</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+        </div>
+        </div>
+    </main>
+    <script src="index.js"></script>
+</body>
+</html>
