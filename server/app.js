@@ -426,13 +426,18 @@ const escapePdfText = (value) => sanitizePdfText(value)
   .replace(/\(/g, '\\(')
   .replace(/\)/g, '\\)');
 
-// Keeps PDF numeric cells compact while still preserving decimal shortages when needed.
-const formatPdfNumber = (value) => {
+// Keeps exported numeric values compact while still preserving real decimals
+// when they matter. Example: 150.0000 -> 150, 5.5000 -> 5.5.
+const formatCompactNumber = (value) => {
   const numericValue = Number(value);
   if (!Number.isFinite(numericValue)) return '-';
   if (Number.isInteger(numericValue)) return String(numericValue);
   return numericValue.toFixed(3).replace(/\.?0+$/, '');
 };
+
+// PDF tables reuse the same compact numeric formatting as CSV exports so the
+// numbers stay readable across both output formats.
+const formatPdfNumber = (value) => formatCompactNumber(value);
 
 // Pads/truncates text so table-like rows line up when rendered in Courier inside the PDF.
 const fitPdfCell = (value, width, alignment = 'left') => {
@@ -832,8 +837,12 @@ const buildPartsCatalogCsv = (rows) => buildCsvBuffer(
     row?.part_id ?? '',
     row?.part_name ?? '',
     row?.tricoma_nr ?? '',
-    row?.reorder_level ?? '',
-    row?.reorder_quantity ?? ''
+    row?.reorder_level == null || row?.reorder_level === ''
+      ? ''
+      : formatCompactNumber(row.reorder_level),
+    row?.reorder_quantity == null || row?.reorder_quantity === ''
+      ? ''
+      : formatCompactNumber(row.reorder_quantity)
   ])
 );
 
